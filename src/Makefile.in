@@ -105,7 +105,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(uidir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_gtk_telegraph_OBJECTS = main.$(OBJEXT) gtk_telegraph.$(OBJEXT)
+am_gtk_telegraph_OBJECTS = main.$(OBJEXT) gtk_telegraph.$(OBJEXT) \
+	controller.$(OBJEXT)
 gtk_telegraph_OBJECTS = $(am_gtk_telegraph_OBJECTS)
 am__DEPENDENCIES_1 =
 gtk_telegraph_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -131,7 +132,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/gtk_telegraph.Po ./$(DEPDIR)/main.Po
+am__depfiles_remade = ./$(DEPDIR)/controller.Po \
+	./$(DEPDIR)/gtk_telegraph.Po ./$(DEPDIR)/main.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -380,7 +382,9 @@ AM_CFLAGS = \
 gtk_telegraph_SOURCES = \
 	main.c \
 	gtk_telegraph.h \
-	gtk_telegraph.c	
+	gtk_telegraph.c \
+	controller.c \
+	controller.h	
 
 gtk_telegraph_LDFLAGS = $(am__append_1) $(am__append_2) \
 	$(am__append_3)
@@ -479,6 +483,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/controller.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk_telegraph.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@ # am--include-marker
 
@@ -663,7 +668,8 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/gtk_telegraph.Po
+		-rm -f ./$(DEPDIR)/controller.Po
+	-rm -f ./$(DEPDIR)/gtk_telegraph.Po
 	-rm -f ./$(DEPDIR)/main.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -710,7 +716,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/gtk_telegraph.Po
+		-rm -f ./$(DEPDIR)/controller.Po
+	-rm -f ./$(DEPDIR)/gtk_telegraph.Po
 	-rm -f ./$(DEPDIR)/main.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

@@ -22,7 +22,9 @@ bin_PROGRAMS = gtk_telegraph
 gtk_telegraph_SOURCES = \
 	main.c \
 	gtk_telegraph.h \
-	gtk_telegraph.c	
+	gtk_telegraph.c \
+	controller.c \
+	controller.h	
 
 
 gtk_telegraph_LDFLAGS =

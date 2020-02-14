@@ -17,6 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gtk_telegraph.h"
+#include "controller.h"
 
 #include <glib/gi18n.h>
 
@@ -34,8 +35,10 @@ G_DEFINE_TYPE (Gtktelegraph, gtk_telegraph, GTK_TYPE_APPLICATION);
 struct _GtktelegraphPrivate
 {
 	/* ANJUTA: Widgets declaration for gtk_telegraph.ui - DO NOT REMOVE */
-	GtkWidget* searchBtn;
-	GtkWidget* drawerStack;
+	GtkStack* drawerStack;
+	GtkWidget* chatsDrawer;
+	GtkWidget* settingsDrawer;
+	GtkRevealer* infoboxRevealer;
 };
 
 GtktelegraphPrivate *priv;
@@ -76,12 +79,14 @@ gtk_telegraph_new_window (GApplication *app,
 	gtk_css_provider_load_from_path (provider, "css/main.css", NULL);
 	gtk_style_context_add_provider (context,
                                     GTK_STYLE_PROVIDER(provider),
-                                    GTK_STYLE_PROVIDER_PRIORITY_USER);
+                                    GTK_STYLE_PROVIDER_PRIORITY_THEME);
 	
 	/* ANJUTA: Widgets initialization for gtk_telegraph.ui - DO NOT REMOVE */
-	priv->searchBtn = GTK_WIDGET (gtk_builder_get_object(builder, "searchBtn"));
-	priv->drawerStack = GTK_WIDGET (gtk_builder_get_object(builder, "drawerStack"));
-		
+	priv->drawerStack = GTK_STACK (gtk_builder_get_object(builder, "drawerStack"));
+	priv->chatsDrawer = GTK_WIDGET (gtk_builder_get_object(builder, "chatsDrawer"));
+	priv->settingsDrawer = GTK_WIDGET (gtk_builder_get_object(builder, "settingsDrawer"));
+	priv->infoboxRevealer = GTK_REVEALER (gtk_builder_get_object(builder, "infoboxRevealer"));
+	
 	g_object_unref (builder);
 	
 	
@@ -137,8 +142,30 @@ gtk_telegraph_class_init (GtktelegraphClass *klass)
 	G_OBJECT_CLASS (klass)->finalize = gtk_telegraph_finalize;
 }
 
-drawer_btn_Clicked (GtkButton *button)
+on_window_destroy(GtkWindow *window)
 {
+	cleanup();
+}
+
+drawer_btn_clicked (GtkButton *button)
+{
+	gtk_stack_set_visible_child(priv->drawerStack, priv->settingsDrawer);
+}
+
+bookmark_btn_clicked (GtkButton *button)
+{
+	gtk_stack_set_visible_child(priv->drawerStack, priv->chatsDrawer);
+}
+
+infopanel_btn_clicked (GtkButton *button)
+{
+	gboolean childRevealed = gtk_revealer_get_reveal_child (priv->infoboxRevealer);
+	gtk_revealer_set_reveal_child (priv->infoboxRevealer, !childRevealed);
+}
+
+message_entry_editing_done(GtkCellEditable *cell_editable, gpointer user_data)
+{
+	printf ("debugged");
 }
 
 Gtktelegraph *
