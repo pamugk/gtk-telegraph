@@ -1,0 +1,24 @@
+* {
+    color: white;
+}
+
+.box {
+    background-color: black;
+    border-color: #ADADAF;
+}
+
+button{
+    background-color: black;
+}
+
+.colored {
+    background-color: #52AC40;
+}
+
+.dangerous {
+    color: #D55854;
+}
+
+.secondary {
+    color: #ADADAF;
+}

@@ -1,18 +1,13 @@
 * {
+    font-size: 10px;
 }
 
 .box {
-    background-color: white;
-    border-color: #ADADAF;
     border-width: 1px;
 }
 
 button {
     border: none;
-}
-
-.colored {
-    background-color: #52AC40;
 }
 
 .dangerous {
@@ -21,10 +16,6 @@ button {
 
 .important {
     font-weight: bold;
-}
-
-.secondary {
-    color: #ADADAF;
 }
 
 .title {

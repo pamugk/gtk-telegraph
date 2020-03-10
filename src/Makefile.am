@@ -24,7 +24,8 @@ gtk_telegraph_SOURCES = \
 	gtk_telegraph.h \
 	gtk_telegraph.c \
 	controller.c \
-	controller.h	
+	controller.h \
+	model.h	
 
 
 gtk_telegraph_LDFLAGS =
