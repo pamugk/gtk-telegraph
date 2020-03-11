@@ -1,13 +1,17 @@
 #include "client.h"
 
 int sockfd;
-struct User* user;
-struct UserList* contacts;
+char userId[74];
+struct User* user = NULL;
+struct UserList* contacts = NULL;
 
 void cleanup() {
-	userDestructor (user);
-	userListDestructor(contacts);
-	logout();
+	if (user != NULL) {
+		logout();
+		userDestructor (user);
+	}
+	if (contacts != NULL)
+		userListDestructor(contacts);
 }
 
 struct sockaddr_in setupServer() {
@@ -56,9 +60,6 @@ void initialize() {
 		exit(1);
 	}
 	readUserDetails();
-	user = login(userId);
-	contacts = getContacts(userId);
-	return user;
 }
 
 #pragma region Destructors
@@ -414,6 +415,7 @@ int logout() {
     send(sockfd, &operation, sizeof(enum ServerOperations), 0);
     close(sockfd);
     printf("Done.\n");
+	return 0;
 }
 
 char* registerUser(struct User* user) {

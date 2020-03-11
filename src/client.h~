@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 extern struct User* user;
+extern struct UserList* contacts;
 
 int addContact(char*, char*);
 int addUserToGroup(char*, char*);

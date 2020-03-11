@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+extern char userId[74];
 extern struct User* user;
 extern struct UserList* contacts;
 

@@ -32,14 +32,24 @@ G_DEFINE_TYPE (Gtktelegraph, gtk_telegraph, GTK_TYPE_APPLICATION);
 
 struct _GtktelegraphPrivate
 {
+	GtkStack* mainStack;
+	GtkBox* mainBox;
 	GtkStack* drawerStack;
 	GtkBox* chatsDrawer;
+	GtkSpinner* connectionSpinner;
+	GtkBox* chatsBox;
 	GtkBox* settingsDrawer;
+	GtkLabel* curUserCellphone;
+	GtkLabel* curUserName;
+	GtkLabel* curUserSurname;
 	GtkBox* messagesBox;
 	GtkRevealer* infoboxRevealer;
+	GtkRevealer* messageRevealer;
 	GtkWindow* callsDialog;
 	GtkWindow* contactsDialog;
 	GtkWindow* settingsDialog;
+	GtkLabel* curUserName1;
+	GtkLabel* curUserSurname1;
 	GtkAboutDialog* aboutDialog;
 };
 
@@ -93,15 +103,24 @@ gtk_telegraph_new_window (GApplication *app,
                                     GTK_STYLE_PROVIDER(lightProvider),
                                     GTK_STYLE_PROVIDER_PRIORITY_USER);
 	
-
+	priv->mainStack = GTK_STACK (gtk_builder_get_object(builder, "mainStack"));
+	priv->mainBox = GTK_BOX (gtk_builder_get_object(builder, "mainBox"));
 	priv->drawerStack = GTK_STACK (gtk_builder_get_object(builder, "drawerStack"));
 	priv->chatsDrawer = GTK_BOX (gtk_builder_get_object(builder, "chatsDrawer"));
+	priv->connectionSpinner = GTK_SPINNER (gtk_builder_get_object(builder, "connectionSpinner"));
+	priv->chatsBox = GTK_BOX (gtk_builder_get_object(builder, "chatsBox"));
 	priv->settingsDrawer = GTK_BOX (gtk_builder_get_object(builder, "settingsDrawer"));
+	priv->curUserCellphone = GTK_LABEL (gtk_builder_get_object(builder, "curUserCellphone"));
+	priv->curUserName = GTK_LABEL (gtk_builder_get_object(builder, "curUserName"));
+	priv->curUserSurname = GTK_LABEL (gtk_builder_get_object(builder, "curUserSurname"));
 	priv->messagesBox = GTK_BOX (gtk_builder_get_object(builder, "messagesBox"));
 	priv->infoboxRevealer = GTK_REVEALER (gtk_builder_get_object(builder, "infoboxRevealer"));
+	priv->messageRevealer = GTK_REVEALER (gtk_builder_get_object(builder, "messageRevealer"));
 	priv->callsDialog = GTK_WINDOW(gtk_builder_get_object(builder, "callsDialog"));
 	priv->contactsDialog = GTK_WINDOW(gtk_builder_get_object(builder, "contactsDialog"));
 	priv->settingsDialog = GTK_WINDOW(gtk_builder_get_object(builder, "settingsDialog"));
+	priv->curUserName1 = GTK_LABEL (gtk_builder_get_object(builder, "curUserName1"));
+	priv->curUserSurname1 = GTK_LABEL (gtk_builder_get_object(builder, "curUserSurname1"));
 	priv->aboutDialog = GTK_ABOUT_DIALOG(gtk_builder_get_object(builder, "aboutDialog"));
 	
 	g_object_unref (builder);
@@ -111,10 +130,41 @@ gtk_telegraph_new_window (GApplication *app,
 	{
 		/* TODO: Add code here to open the file in the new window */
 	}
-
 	gtk_widget_show_all (GTK_WIDGET (window));
 }
 
+/*Chat client interactions*/
+void showUserDetails() {
+	gtk_label_set_text(priv->curUserCellphone, user->phone);
+	gtk_label_set_text(priv->curUserName, user->name);
+	gtk_label_set_text(priv->curUserSurname, user->surname);
+	gtk_label_set_text(priv->curUserName1, user->name);
+	gtk_label_set_text(priv->curUserSurname1, user->surname);
+}
+
+GtkBox* makeUserBox(struct User* user) {
+	GtkBox* userBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10));
+	GtkWidget* avatar = gtk_image_new ();
+	gtk_box_pack_start (userBox, avatar, FALSE, FALSE, 5);
+	GtkBox* userLatestBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+	GtkBox* userNameBox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10));
+	GtkWidget* userNameLbl = gtk_label_new (user->name);
+	GtkWidget* userSurnameLbl = gtk_label_new (user->surname);
+	gtk_box_pack_start (userNameBox, userNameLbl, FALSE, FALSE, 5);
+	gtk_box_pack_start (userNameBox, userSurnameLbl, FALSE, FALSE, 5);
+	gtk_box_pack_start (userLatestBox, userNameBox, FALSE, TRUE, 5);
+	gtk_box_pack_start (userBox, userLatestBox, FALSE, TRUE, 5);
+	return userBox;
+}
+
+void showUserContacts() {
+	printf("%d\n", contacts->count);
+	for (int i = 0; i < contacts->count; i += 1) {
+		GtkBox* userBox = makeUserBox (contacts->list[i]);
+		gtk_box_pack_start(priv->chatsBox, userBox,FALSE, FALSE, 5);
+		gtk_widget_show_now (userBox);
+	}
+}
 
 /* GApplication implementation */
 static void
@@ -151,6 +201,17 @@ gtk_telegraph_class_init (GtktelegraphClass *klass){
 	g_type_class_add_private (klass, sizeof (GtktelegraphPrivate));
 
 	G_OBJECT_CLASS (klass)->finalize = gtk_telegraph_finalize;
+}
+
+on_login_btn_clicked(GtkButton *button) {
+	initialize();
+	gtk_stack_set_visible_child(priv->mainStack, priv->mainBox);
+	user = login(userId);
+	gtk_spinner_start (priv->connectionSpinner);
+	contacts = getContacts (userId);
+	showUserDetails();
+	showUserContacts();
+	gtk_spinner_stop (priv->connectionSpinner);
 }
 
 add_to_contacts_btn_clicked(GtkButton *button){
