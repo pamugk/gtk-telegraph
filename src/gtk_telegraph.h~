@@ -1,6 +1,4 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-  */
-shell-init: error retrieving current directory: getcwd: cannot access parent directories: No such file or directory
-chdir: error retrieving current directory: getcwd: cannot access parent directories: No such file or directory
 /*
  * gtk-telegraph.h
  * Copyright (C) 2020 PAM <pamugk@gmail.com>
@@ -21,7 +19,6 @@ chdir: error retrieving current directory: getcwd: cannot access parent director
 
 #ifndef _GTK_TELEGRAPH_
 #define _GTK_TELEGRAPH_
-
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS

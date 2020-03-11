@@ -19,7 +19,6 @@
 
 #ifndef _GTK_TELEGRAPH_
 #define _GTK_TELEGRAPH_
-
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
@@ -56,4 +55,5 @@ Gtktelegraph *gtk_telegraph_new (void);
 G_END_DECLS
 
 #endif /* _APPLICATION_H_ */
+#include "client.h"
 

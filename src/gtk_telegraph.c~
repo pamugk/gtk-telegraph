@@ -17,7 +17,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gtk_telegraph.h"
-#include "controller.h"
 
 #include <glib/gi18n.h>
 
@@ -213,15 +212,13 @@ message_entry_activate(GtkEntry *messageEntry, gpointer user_data){
 }
 
 nm_switch_activated(GtkSwitch* widget, gboolean state, gpointer user_data){
-	if (state)
-	{
+	if (state) {
 		gtk_style_context_remove_provider_for_screen(screen, lightProvider);
 		gtk_style_context_add_provider_for_screen (screen,
 		                                GTK_STYLE_PROVIDER(darkProvider),
 		                                GTK_STYLE_PROVIDER_PRIORITY_USER);
 	}
-	else
-	{
+	else {
 		gtk_style_context_remove_provider_for_screen(screen, darkProvider);
 		gtk_style_context_add_provider_for_screen (screen,
 		                                GTK_STYLE_PROVIDER(lightProvider),

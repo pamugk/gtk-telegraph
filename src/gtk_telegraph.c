@@ -17,7 +17,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gtk_telegraph.h"
-#include "controller.h"
 
 #include <glib/gi18n.h>
 
@@ -112,7 +111,7 @@ gtk_telegraph_new_window (GApplication *app,
 	{
 		/* TODO: Add code here to open the file in the new window */
 	}
-
+	initialize();
 	gtk_widget_show_all (GTK_WIDGET (window));
 }
 

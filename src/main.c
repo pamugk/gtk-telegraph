@@ -23,8 +23,6 @@
 
 
 #include <glib/gi18n.h>
-
-
 int
 main (int argc, char *argv[])
 {

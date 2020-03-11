@@ -21,27 +21,19 @@ bin_PROGRAMS = gtk_telegraph
 
 gtk_telegraph_SOURCES = \
 	main.c \
-	gtk_telegraph.h \
+	client.c \
+	client.h \
+	serverDataModel.h \
 	gtk_telegraph.c \
-	controller.c \
-	controller.h \
-	model.h	
+	gtk_telegraph.h	
 
 
-gtk_telegraph_LDFLAGS =
+gtk_telegraph_LDFLAGS = \
+	-Wl,--export-dynamic
 
 gtk_telegraph_LDADD = $(GTK_TELEGRAPH_LIBS)
 
 
-if PLATFORM_WIN32
-gtk_telegraph_LDFLAGS += -Wl,--export-all-symbols
-else
-gtk_telegraph_LDFLAGS += -Wl,--export-dynamic
-endif
-
-if NATIVE_WIN32
-gtk_telegraph_LDFLAGS += -mwindows
-endif
 
 
 EXTRA_DIST = $(ui_DATA)
