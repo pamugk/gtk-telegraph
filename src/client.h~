@@ -20,7 +20,7 @@ char* createGroup(struct Group*);
 void initialize();
 struct UserList* getContacts(char*);
 struct Group* getGroupInfo(char*);
-struct MessageList* getMessages(char*, char*);
+struct MessageList* getMessages(char*);
 struct User* getUser(char*);
 struct GroupList* getUserGroups(char*);
 struct User* login(char*);

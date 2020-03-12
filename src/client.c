@@ -300,7 +300,7 @@ char* createGroup(struct Group* newGroup) {
     return createdGroupId;
 }
 
-struct UserList* getContacts(char* userId) {
+struct UserList* getContacts() {
     printf("Asking for the contacts.\n");
     enum ServerOperations operation = GET_CONTACTS;
     int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
@@ -308,7 +308,6 @@ struct UserList* getContacts(char* userId) {
         perror("send");
         exit(1);
     }
-    res = doSendStr(sockfd, userId);
     enum ServerResponses response;
     res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
     struct UserList* contacts = NULL;
@@ -507,7 +506,8 @@ char* sendMessage(struct Message* newMessage) {
         printf("Done.\n");
         return messageId;
     }
-    printf("Failure.\n");
+	else
+    	printf("Failure.\n");
     return NULL;
 }
 #pragma endregion

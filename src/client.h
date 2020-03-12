@@ -18,7 +18,7 @@ int clearHistory(char*);
 void cleanup();
 char* createGroup(struct Group*);
 void initialize();
-struct UserList* getContacts(char*);
+struct UserList* getContacts();
 struct Group* getGroupInfo(char*);
 struct MessageList* getMessages(char*);
 struct User* getUser(char*);

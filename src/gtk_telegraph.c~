@@ -335,7 +335,9 @@ infopanel_btn_clicked (GtkButton *button){
 
 void putMessage(const gchar* text, gboolean local) {
 	GtkWidget* messageLabel = gtk_label_new(text);
-	GtkStyleContext* context = gtk_widget_get_style_context(messageLabel);
+	GtkStyleContext* context = 
+		gtk_widget_get_style_context(messageLabel);
+	gtk_style_context_add_class(context, "message");
 	gtk_box_pack_start(priv->messagesBox, messageLabel, FALSE, FALSE, 0);
 	gtk_widget_set_halign(messageLabel, local ? GTK_ALIGN_END : GTK_ALIGN_START);
 	gtk_widget_set_margin_end(messageLabel, 20);
@@ -345,7 +347,21 @@ void putMessage(const gchar* text, gboolean local) {
 message_entry_activate(GtkEntry *messageEntry, gpointer user_data){
 	const gchar *text = gtk_entry_get_text(messageEntry);
 	if (strcmp(text, "") != 0){
-		putMessage(text, TRUE);
+		struct Message* message = 
+			(struct Message*)malloc(sizeof(struct Message));
+		char* curUserId = (char*)calloc(strlen(userId), sizeof(char));
+		strcpy(curUserId, userId);
+		message->fromId = curUserId;
+		message->toId = contacts->list[gtk_list_box_row_get_index(
+			gtk_list_box_get_selected_row (priv->chatsBox))]->id;
+		char* messageText = (char*)calloc(strlen(text), sizeof(char));
+		strcpy(messageText, text);
+		message->text = messageText;
+		message->id = sendMessage (message);
+		if (message -> id == NULL)
+			messageDestructor (message);
+		else
+			putMessage(text, TRUE);
 		gtk_entry_set_text (messageEntry, "");
 	}
 	return TRUE;

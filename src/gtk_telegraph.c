@@ -347,7 +347,19 @@ void putMessage(const gchar* text, gboolean local) {
 message_entry_activate(GtkEntry *messageEntry, gpointer user_data){
 	const gchar *text = gtk_entry_get_text(messageEntry);
 	if (strcmp(text, "") != 0){
-		putMessage(text, TRUE);
+		struct Message* message = 
+			(struct Message*)malloc(sizeof(struct Message));
+		char* curUserId = (char*)calloc(strlen(userId), sizeof(char));
+		strcpy(curUserId, userId);
+		message->fromId = curUserId;
+		message->toId = contacts->list[gtk_list_box_row_get_index(
+			gtk_list_box_get_selected_row (priv->chatsBox))]->id;
+		message->text = text;
+		message->id = sendMessage (message);
+		if (message -> id == NULL)
+			messageDestructor (message);
+		else
+			putMessage(text, TRUE);
 		gtk_entry_set_text (messageEntry, "");
 	}
 	return TRUE;
