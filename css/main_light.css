@@ -15,12 +15,25 @@ button{
     background-color: #52AC40;
 }
 
+.contact {
+    background-color: white;
+}
+
+.contact:hover {
+    background-color: #F1F1F1;
+}
+
 .dangerous {
     color: #D55854;
 }
 
 .inversive-text {
     color: white;
+}
+
+.message {
+    background-color: white;
+    border-color: #ADADAF;
 }
 
 .secondary {

@@ -3,26 +3,39 @@
 }
 
 .box {
-    background-color: black;
+    background-color: #17212B;
     border-color: #ADADAF;
 }
 
 button{
-    background-color: black;
+    background-color: #17212B;
 }
 
 .colored {
-    background-color: #52AC40;
+    background-color: #0E1621;
+}
+
+.contact {
+    background-color: #2B5278;
+}
+
+.contact:hover {
+    background-color: #2B5278;
 }
 
 .dangerous {
-    color: #D55854;
+    color: #8A262B;
 }
 
 .inversive-text {
     color: black;
 }
 
+.message {
+    background-color: #2B5278;
+    border-color: #2B5278;
+}
+
 .secondary {
-    color: #ADADAF;
+    color: #6B7E93;
 }

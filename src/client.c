@@ -100,6 +100,7 @@ void userDestructor(struct User* user) {
     free(user->username);
     free(user->name);
     free(user->surname);
+	free(user->fullname);
     if (user->biography != NULL)
         free(user->biography);
 }
@@ -170,6 +171,9 @@ struct User* doRecieveUser(int sockfd) {
     user->username = doRecieveStr(sockfd);
     user->name = doRecieveStr(sockfd);
     user->surname = doRecieveStr(sockfd);
+	user->fullname = (char*)calloc(strlen(user->name) + 
+		strlen(user->surname) + 1, sizeof(char));
+	sprintf(user->fullname, "%s %s", user->name, user->surname);
     user->biography = doRecieveStr(sockfd);
     return user;
 }

@@ -69,8 +69,14 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-close</property>
   </object>
+  <object class="GtkTextBuffer" id="contactBioTextBuffer"/>
   <object class="GtkEntryCompletion" id="contactCompletion">
     <property name="inline_completion">True</property>
+  </object>
+  <object class="GtkAdjustment" id="contactsAdj">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
   </object>
   <object class="GtkImage" id="contactsImage">
     <property name="visible">True</property>
@@ -143,6 +149,9 @@
             <property name="halign">center</property>
             <property name="valign">center</property>
             <signal name="clicked" handler="on_login_btn_clicked" swapped="no"/>
+            <style>
+              <class name="very-important-button"/>
+            </style>
           </object>
           <packing>
             <property name="name">page1</property>
@@ -219,13 +228,28 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="chatsBox">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <property name="spacing">10</property>
+                        <property name="can_focus">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="shadow_type">in</property>
                         <child>
-                          <placeholder/>
+                          <object class="GtkViewport">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="vadjustment">contactsAdj</property>
+                            <child>
+                              <object class="GtkBox" id="chatsBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <property name="spacing">10</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
                         </child>
                       </object>
                       <packing>
@@ -279,43 +303,15 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkLabel" id="curUserFullname">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="spacing">10</property>
-                                <child>
-                                  <object class="GtkLabel" id="curUserName">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="halign">start</property>
-                                    <property name="label" translatable="yes">Name</property>
-                                    <style>
-                                      <class name="username"/>
-                                      <class name="inversive-text"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="curUserSurname">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">label</property>
-                                    <style>
-                                      <class name="username"/>
-                                      <class name="inversive-text"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
+                                <property name="halign">start</property>
+                                <property name="label" translatable="yes">Name</property>
+                                <style>
+                                  <class name="username"/>
+                                  <class name="inversive-text"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -329,6 +325,9 @@
                                 <property name="can_focus">False</property>
                                 <property name="halign">start</property>
                                 <property name="label" translatable="yes">cellphone</property>
+                                <style>
+                                  <class name="inversive-text"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -855,7 +854,7 @@
                         <property name="orientation">vertical</property>
                         <property name="row_spacing">5</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="contactFullname">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="valign">end</property>
@@ -875,7 +874,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="valign">start</property>
-                            <property name="label" translatable="yes">Last seen </property>
+                            <property name="label" translatable="yes">Last seen: recently</property>
                             <style>
                               <class name="secondary"/>
                             </style>
@@ -967,33 +966,56 @@
                             <property name="height_request">48</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="valign">start</property>
                             <property name="stock">gtk-info</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
                             <property name="top_attach">0</property>
-                            <property name="height">2</property>
+                            <property name="height">3</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkRevealer" id="contactUsernameRevealer">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">@username</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Username</property>
-                            <style>
-                              <class name="secondary"/>
-                            </style>
+                            <property name="transition_type">none</property>
+                            <property name="reveal_child">True</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="contactUsername">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">@username</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Username</property>
+                                    <style>
+                                      <class name="secondary"/>
+                                    </style>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
@@ -1001,27 +1023,66 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton">
-                            <property name="label" translatable="yes">ADD TO CONTACTS</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <signal name="clicked" handler="add_to_contacts_btn_clicked" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
+                          <object class="GtkStack" id="contactMobileStack">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Notifications</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="contactMobileValueLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Mobile phone</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Mobile</property>
+                                    <style>
+                                      <class name="secondary"/>
+                                    </style>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="name">page1</property>
+                                <property name="title" translatable="yes">page1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton">
+                                <property name="label" translatable="yes">ADD TO CONTACTS</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="add_to_contacts_btn_clicked" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="name">page0</property>
+                                <property name="title" translatable="yes">page0</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
-                            <property name="top_attach">3</property>
+                            <property name="top_attach">0</property>
                           </packing>
                         </child>
                         <child>
@@ -1038,9 +1099,21 @@
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Notifications</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">3</property>
+                          </packing>
+                        </child>
+                        <child>
                           <object class="GtkSwitch">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="halign">center</property>
                             <property name="valign">center</property>
                           </object>
                           <packing>
@@ -1049,7 +1122,56 @@
                           </packing>
                         </child>
                         <child>
-                          <placeholder/>
+                          <object class="GtkRevealer" id="contactBiographyRevealer">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="transition_type">none</property>
+                            <property name="reveal_child">True</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkTextView">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="editable">False</property>
+                                    <property name="wrap_mode">word</property>
+                                    <property name="justification">fill</property>
+                                    <property name="cursor_visible">False</property>
+                                    <property name="buffer">contactBioTextBuffer</property>
+                                    <property name="accepts_tab">False</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="yes">Bio</property>
+                                    <style>
+                                      <class name="secondary"/>
+                                    </style>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">2</property>
+                          </packing>
                         </child>
                         <child>
                           <placeholder/>
@@ -1385,35 +1507,11 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkLabel" id="curUserFullname1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="spacing">10</property>
-                        <child>
-                          <object class="GtkLabel" id="curUserName1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="valign">center</property>
-                            <property name="label" translatable="yes">name</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="curUserSurname1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">surname</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
+                        <property name="valign">center</property>
+                        <property name="label" translatable="yes">name</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
