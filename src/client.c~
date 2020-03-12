@@ -4,6 +4,7 @@ int sockfd;
 char userId[74];
 struct User* user = NULL;
 struct UserList* contacts = NULL;
+GList list;
 
 void cleanup() {
 	if (user != NULL) {

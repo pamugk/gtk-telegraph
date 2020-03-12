@@ -4,7 +4,7 @@
 
 .box {
     background-color: #17212B;
-    border-color: #ADADAF;
+    border-color: #2B5278;
 }
 
 button{
@@ -19,6 +19,14 @@ button{
     background-color: #2B5278;
 }
 
+.contactList {
+    background-color: #2B5278;
+}
+
+.contactList row:selected {
+    background-color: #2B5278;
+}
+
 .contact:hover {
     background-color: #2B5278;
 }
@@ -28,7 +36,7 @@ button{
 }
 
 .inversive-text {
-    color: black;
+    color: white;
 }
 
 .message {

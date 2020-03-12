@@ -19,6 +19,14 @@ button{
     background-color: white;
 }
 
+.contactList {
+    background-color: white;
+}
+
+.contactList row:selected {
+    background-color: #F1F1F1;
+}
+
 .contact:hover {
     background-color: #F1F1F1;
 }

@@ -37,7 +37,8 @@ struct _GtktelegraphPrivate
 	GtkStack* drawerStack;
 	GtkBox* chatsDrawer;
 	GtkSpinner* connectionSpinner;
-	GtkBox* chatsBox;
+	GtkListBox* chatsBox;
+	GtkLabel* chatsBoxPlaceholder;
 	GtkBox* settingsDrawer;
 	GtkLabel* curUserCellphone;
 	GtkLabel* curUserFullname;
@@ -51,7 +52,7 @@ struct _GtktelegraphPrivate
 	GtkRevealer* contactUsernameRevealer;
 	GtkLabel* contactUsername;
 	GtkRevealer* contactBiographyRevealer;
-	GtkTextBuffer* contactBioTextBuffer;
+	GtkLabel* contactBioLabel;
 	GtkWindow* callsDialog;
 	GtkWindow* contactsDialog;
 	GtkWindow* settingsDialog;
@@ -119,8 +120,10 @@ gtk_telegraph_new_window (GApplication *app,
 		GTK_BOX (gtk_builder_get_object(builder, "chatsDrawer"));
 	priv->connectionSpinner =
 		GTK_SPINNER (gtk_builder_get_object(builder, "connectionSpinner"));
-	priv->chatsBox = GTK_BOX
-		(gtk_builder_get_object(builder, "chatsBox"));
+	priv->chatsBox = GTK_LIST_BOX(gtk_builder_get_object(builder, "chatsBox"));
+	priv->chatsBoxPlaceholder = GTK_LABEL(gtk_label_new("No contacts found"));
+	gtk_list_box_set_placeholder (priv->chatsBox, priv->chatsBoxPlaceholder);
+	gtk_widget_set_visible (priv->chatsBoxPlaceholder, TRUE);
 	priv->settingsDrawer =
 		GTK_BOX (gtk_builder_get_object(builder, "settingsDrawer"));
 	priv->curUserCellphone =
@@ -147,8 +150,8 @@ gtk_telegraph_new_window (GApplication *app,
 		GTK_LABEL (gtk_builder_get_object(builder, "contactUsername"));
 	priv->contactBiographyRevealer =
 		GTK_REVEALER (gtk_builder_get_object(builder, "contactBiographyRevealer"));
-	priv->contactBioTextBuffer =
-		GTK_TEXT_BUFFER (gtk_builder_get_object(builder, "contactBioTextBuffer"));
+	priv->contactBioLabel =
+		GTK_LABEL (gtk_builder_get_object(builder, "contactBioLabel"));
 	priv->callsDialog =
 		GTK_WINDOW(gtk_builder_get_object(builder, "callsDialog"));
 	priv->contactsDialog =
@@ -187,30 +190,52 @@ void showUserDetails(struct User* user) {
 	if (user->biography == NULL || strcmp(user->biography, "") == 0)
 		gtk_revealer_set_reveal_child(priv->contactBiographyRevealer, FALSE);
 	else {
-		gtk_text_buffer_set_text (priv->contactBioTextBuffer, 
-		                          user->biography, strlen(user->biography));
+		gtk_label_set_text (priv->contactBioLabel, user->biography);
 		gtk_revealer_set_reveal_child(priv->contactBiographyRevealer, TRUE);
 	}
 }
 
-void contact_clicked(GtkWidget *widget, gpointer data) {
-	showUserDetails((struct User*) data);
-}
-
 GtkWidget* makeContact(struct User* user) {
-	GtkWidget* contact = gtk_button_new_with_label(user->fullname);
-	g_signal_connect(GTK_BUTTON(contact), "clicked",
-	                        G_CALLBACK(contact_clicked), user);
-	GtkStyleContext* context = gtk_widget_get_style_context(contact);
+	GtkGrid* contactInfo = GTK_GRID(gtk_grid_new());
+	GtkStyleContext* context = 
+		gtk_widget_get_style_context(GTK_WIDGET(contactInfo));
 	gtk_style_context_add_class(context, "contact");
+	gtk_widget_set_halign (contactInfo, GTK_ALIGN_FILL);
+
+	GtkWidget* contactAvatar = gtk_image_new();
+	gtk_widget_set_visible (contactAvatar, TRUE);
+	gtk_widget_set_halign (contactAvatar, GTK_ALIGN_START);
+	
+	GtkWidget* contactName = gtk_label_new(user->fullname);
+	context = gtk_widget_get_style_context (contactName);
 	gtk_style_context_add_class(context, "username");
-	return contact;
+	gtk_widget_set_visible (contactName, TRUE);
+	gtk_widget_set_halign (contactName, GTK_ALIGN_CENTER);
+
+	GtkWidget* contactLastMessage = GTK_LABEL(gtk_label_new(""));
+	context = gtk_widget_get_style_context (contactLastMessage);
+	gtk_style_context_add_class(context, "secondary");
+	gtk_widget_set_visible (contactLastMessage, TRUE);
+	gtk_widget_set_halign (contactLastMessage, GTK_ALIGN_CENTER);
+
+	GtkWidget* contactLastSeen = gtk_label_new("Recently");
+	context = gtk_widget_get_style_context (contactLastSeen);
+	gtk_style_context_add_class(context, "secondary");
+	gtk_widget_set_visible (contactLastSeen, TRUE);
+	gtk_widget_set_halign (contactLastSeen, GTK_ALIGN_END);
+	
+	gtk_grid_attach(contactInfo, contactAvatar, 0, 0, 1, 2);
+	gtk_grid_attach(contactInfo, contactName, 1, 0, 1, 1);
+	gtk_grid_attach(contactInfo, contactLastMessage, 1, 1, 1, 1);
+	gtk_grid_attach(contactInfo, contactLastSeen, 2, 1, 1, 1);
+	
+	return GTK_WIDGET(contactInfo);
 }
 
 void showUserContacts() {
 	for (int i = 0; i < contacts->count; i += 1) {
 		GtkWidget* contact = makeContact (contacts->list[i]);
-		gtk_box_pack_start(priv->chatsBox, contact, FALSE, FALSE, 0);
+		gtk_list_box_insert(priv->chatsBox, contact, -1);
 		gtk_widget_set_visible(contact, TRUE);
 	}
 }
@@ -308,30 +333,35 @@ infopanel_btn_clicked (GtkButton *button){
 	gtk_revealer_set_reveal_child (priv->infoboxRevealer, !childRevealed);
 }
 
+void putMessage(const gchar* text, gboolean local) {
+	GtkWidget* messageLabel = gtk_label_new(text);
+	GtkStyleContext* context = gtk_widget_get_style_context(messageLabel);
+	gtk_box_pack_start(priv->messagesBox, messageLabel, FALSE, FALSE, 0);
+	gtk_widget_set_halign(messageLabel, local ? GTK_ALIGN_END : GTK_ALIGN_START);
+	gtk_widget_set_margin_end(messageLabel, 20);
+	gtk_widget_set_visible (messageLabel, TRUE);
+}
+
 message_entry_activate(GtkEntry *messageEntry, gpointer user_data){
 	const gchar *text = gtk_entry_get_text(messageEntry);
 	if (strcmp(text, "") != 0){
-		GtkLabel* messageLabel = gtk_label_new(text);
-		gtk_box_pack_start(priv->messagesBox, messageLabel, FALSE, FALSE, 0);
-		gtk_widget_set_halign(messageLabel, GTK_ALIGN_END);
-		gtk_widget_set_margin_end(messageLabel, 20);
-		gtk_widget_set_visible (messageLabel, TRUE);
+		putMessage(text, TRUE);
 		gtk_entry_set_text (messageEntry, "");
-	}	
+	}
 	return TRUE;
 }
 
 nm_switch_activated(GtkSwitch* widget, gboolean state, gpointer user_data){
 	if (state) {
-		gtk_style_context_remove_provider_for_screen(screen, darkProvider);
-		gtk_style_context_add_provider_for_screen (screen,
-		                                GTK_STYLE_PROVIDER(lightProvider),
-		                                GTK_STYLE_PROVIDER_PRIORITY_USER);
-	}
-	else {
 		gtk_style_context_remove_provider_for_screen(screen, lightProvider);
 		gtk_style_context_add_provider_for_screen (screen,
 		                                GTK_STYLE_PROVIDER(darkProvider),
+		                                GTK_STYLE_PROVIDER_PRIORITY_USER);
+	}
+	else {
+		gtk_style_context_remove_provider_for_screen(screen, darkProvider);
+		gtk_style_context_add_provider_for_screen (screen,
+		                                GTK_STYLE_PROVIDER(lightProvider),
 		                                GTK_STYLE_PROVIDER_PRIORITY_USER);
 	}
 	gtk_switch_set_state (widget, state);
@@ -345,6 +375,18 @@ on_modal_window_delete(GtkWidget *widget, GdkEvent  *event, gpointer user_data){
 
 on_window_destroy(GtkWindow *window){
 	cleanup();
+}
+
+chatRowSelected(GtkListBox* box, GtkListBoxRow *row, gpointer user_data) {
+	if (row == NULL) {
+		gtk_revealer_set_reveal_child (priv->topboxRevealer, FALSE);
+		gtk_revealer_set_reveal_child (priv->infoboxRevealer, FALSE);
+		gtk_revealer_set_reveal_child (priv->messageRevealer, FALSE);
+	}
+	else {
+		gint i = gtk_list_box_row_get_index(row);
+		showUserDetails (contacts->list[i]);
+	}
 }
 
 settings_btn_clicked(GtkButton *button){
