@@ -237,11 +237,10 @@ int doSendUser(int nsock, struct User* user) {
 }
 #pragma endregion
 #pragma region Client functions
-int addContact(char* userId, char* contactId) {
+int addContact(char* contactId) {
     printf("Adding contact.\n");
     enum ServerOperations operation = ADD_CONTACT;
     send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendStr(sockfd, userId);
     doSendStr(sockfd, contactId);
     enum ServerResponses response;
     int res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
@@ -344,7 +343,7 @@ struct Group* getGroupInfo(char* groupId) {
     return group;
 }
 
-struct MessageList* getMessages(char* fromId, char* toId) {
+struct MessageList* getMessages(char* fromId) {
     printf("Fetching messages.\n");
     enum ServerOperations operation = GET_MESSAGES;
     int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
@@ -469,11 +468,10 @@ int removeMessage(struct Message* message) {
     return 1;
 }
 
-int removeUser(char* userId) {
+int removeUser() {
     printf("Asking for the removal of a user.\n");
     enum ServerOperations operation = REMOVE_USER;
     int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, userId);
     enum ServerResponses response;
     res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {

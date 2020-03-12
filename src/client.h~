@@ -8,12 +8,13 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+extern char userId[74];
 extern struct User* user;
 extern struct UserList* contacts;
 
-int addContact(char*, char*);
+int addContact(char*);
 int addUserToGroup(char*, char*);
-int clearHistory(char*, char*);
+int clearHistory(char*);
 void cleanup();
 char* createGroup(struct Group*);
 void initialize();
@@ -27,6 +28,6 @@ int logout();
 char* registerUser(struct User*);
 int removeGroup(char*);
 int removeMessage(struct Message*);
-int removeUser(char*);
+int removeUser();
 int resendMessage(struct Message*);
 char* sendMessage(struct Message*);
