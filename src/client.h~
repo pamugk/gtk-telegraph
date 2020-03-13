@@ -1,16 +1,23 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <netinet/in.h>
+#include <pthread.h>
+#include <sched.h> 
 #include "serverDataModel.h"
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ipc.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 extern char userId[74];
 extern struct User* user;
 extern struct UserList* contacts;
+
+void acceptNewMessage(struct Message*, );
 
 int addContact(char*);
 int addUserToGroup(char*, char*);
@@ -18,7 +25,7 @@ int clearHistory(char*);
 void cleanup();
 char* createGroup(struct Group*);
 void initialize();
-struct UserList* getContacts(char*);
+struct UserList* getContacts();
 struct Group* getGroupInfo(char*);
 struct MessageList* getMessages(char*);
 struct User* getUser(char*);

@@ -770,6 +770,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="vexpand">True</property>
+                    <property name="hscrollbar_policy">never</property>
                     <property name="shadow_type">in</property>
                     <child>
                       <object class="GtkViewport">
@@ -777,12 +778,25 @@
                         <property name="can_focus">False</property>
                         <property name="vadjustment">messagesAdj</property>
                         <child>
-                          <object class="GtkBox" id="messagesBox">
+                          <object class="GtkStack" id="messagesStack">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="orientation">vertical</property>
                             <child>
-                              <placeholder/>
+                              <object class="GtkLabel" id="messagesPlaceholder">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <property name="label" translatable="yes">Please select a chat to start messaging</property>
+                                <style>
+                                  <class name="inversive-text"/>
+                                  <class name="colored"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="name">page0</property>
+                                <property name="title" translatable="yes">page0</property>
+                              </packing>
                             </child>
                             <style>
                               <class name="colored"/>

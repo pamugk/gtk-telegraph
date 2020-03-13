@@ -1,6 +1,6 @@
 #include "client.h"
 
-int sockfd;
+int mainSocket,notifierSocket;
 char userId[74];
 struct User* user = NULL;
 struct UserList* contacts = NULL;
@@ -50,18 +50,76 @@ void readUserDetails(){
 
 void initialize() {
 	struct sockaddr_in server = setupServer();
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd == -1) {
+    mainSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (mainSocket == -1) {
 		perror("socket error");
 		exit(1);
 	}
-	if (connect(sockfd, (struct sockaddr *) &server, sizeof(server)) == -1) {
+    notifierSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (notifierSocket == -1) {
+		perror("socket error");
+		exit(1);
+	}
+	if (connect(mainSocket, (struct sockaddr *) &server, sizeof(server)) == -1) {
 		perror("connect error");
+		exit(1);
+	}
+	if (connect(notifierSocket, (struct sockaddr *) &server, sizeof(server)) == -1) {
+		perror("connect error");
+        close(mainSocket);
 		exit(1);
 	}
 	readUserDetails();
 }
 
+#pragma region Callbacks
+struct Message* doRecieveMessage(int nsock, int recieveHeaderOnly);
+
+void* callback(void* params) {
+    enum ServerNotifications notification;
+	ssize_t size;
+    do {
+		size = recv(notifierSocket, &notification, sizeof(enum ServerNotifications), 0);
+		if (size == -1) {
+			perror("recv");
+			break;
+		}
+        printf("Got a new notification\n");
+        switch (notification)
+        {
+        case NEW_MESSAGE:{
+            struct Message* message = doRecieveMessage(notifierSocket, 0);
+			acceptNewMessage(message);
+            messageDestructor(message);
+            break;
+        }
+        case SHUTDOWN:{
+	        printf("Server is down, long live the server.\n");
+            break;
+        }
+        }
+    } while (notification != SHUTDOWN);
+    close (notifierSocket);
+    kill(getppid(), SIGUSR1);
+    pthread_exit(0);
+}
+
+void stopClient(int sig) {
+    close(mainSocket);
+    exit(0);
+}
+
+void setupCallbacks() {
+    static struct sigaction act;
+	act.sa_handler = stopClient;
+	sigfillset(&(act.sa_mask));
+	sigaction(SIGUSR1, &act, NULL);
+	pthread_t tid;
+	int res = pthread_create(&tid, NULL, callback, NULL);
+	if (res == -1)
+		perror("pthread_create");
+}
+#pragma endregion
 #pragma region Destructors
 void groupDestructor(struct Group* group) {
     if (group->id != NULL)
@@ -112,15 +170,15 @@ void userListDestructor(struct UserList* userList) {
 }
 #pragma endregion
 #pragma region Auxillary functions
-char* doRecieveStr(int sockfd) {
+char* doRecieveStr(int mainSocket) {
     int8_t isNull;
-	int res = recv(sockfd, &isNull, sizeof(int8_t), 0);
+	int res = recv(mainSocket, &isNull, sizeof(int8_t), 0);
     char* str = NULL;
 	if (isNull != 0) {
         size_t size;
-        recv(sockfd, &size, sizeof(size_t), 0);
+        recv(mainSocket, &size, sizeof(size_t), 0);
         str = calloc(size, sizeof(char));
-        recv(sockfd, str, size * sizeof(char), 0);
+        recv(mainSocket, str, size * sizeof(char), 0);
 	}
     return str;
 }
@@ -164,17 +222,17 @@ struct MessageList* doRecieveMessages(int nsock) {
 	return messages;
 }
 
-struct User* doRecieveUser(int sockfd) {
+struct User* doRecieveUser(int mainSocket) {
     struct User* user = (struct User*) malloc(sizeof(struct User));
-    user->id = doRecieveStr(sockfd);
-    user->phone = doRecieveStr(sockfd);
-    user->username = doRecieveStr(sockfd);
-    user->name = doRecieveStr(sockfd);
-    user->surname = doRecieveStr(sockfd);
+    user->id = doRecieveStr(mainSocket);
+    user->phone = doRecieveStr(mainSocket);
+    user->username = doRecieveStr(mainSocket);
+    user->name = doRecieveStr(mainSocket);
+    user->surname = doRecieveStr(mainSocket);
 	user->fullname = (char*)calloc(strlen(user->name) + 
 		strlen(user->surname) + 1, sizeof(char));
 	sprintf(user->fullname, "%s %s", user->name, user->surname);
-    user->biography = doRecieveStr(sockfd);
+    user->biography = doRecieveStr(mainSocket);
     return user;
 }
 
@@ -240,10 +298,10 @@ int doSendUser(int nsock, struct User* user) {
 int addContact(char* contactId) {
     printf("Adding contact.\n");
     enum ServerOperations operation = ADD_CONTACT;
-    send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendStr(sockfd, contactId);
+    send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendStr(mainSocket, contactId);
     enum ServerResponses response;
-    int res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    int res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -255,11 +313,11 @@ int addContact(char* contactId) {
 int addUserToGroup(char* groupId, char* userId) {
     printf("Adding user to group.\n");
     enum ServerOperations operation = ADD_USER_TO_GROUP;
-    send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendStr(sockfd, groupId);
-    doSendStr(sockfd, userId);
+    send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendStr(mainSocket, groupId);
+    doSendStr(mainSocket, userId);
     enum ServerResponses response;
-    int res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    int res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -271,10 +329,10 @@ int addUserToGroup(char* groupId, char* userId) {
 int clearHistory(char* fromId) {
     printf("Clearing history of messages.\n");
     enum ServerOperations operation = ADD_USER_TO_GROUP;
-    send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendStr(sockfd, fromId);
+    send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendStr(mainSocket, fromId);
     enum ServerResponses response;
-    int res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    int res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -286,13 +344,13 @@ int clearHistory(char* fromId) {
 char* createGroup(struct Group* newGroup) {
     printf("Asking for the creation of a new group.\n");
     enum ServerOperations operation = CREATE_GROUP;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendGroup(sockfd, newGroup);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendGroup(mainSocket, newGroup);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     char* createdGroupId = NULL;
     if (response == SUCCESS) {
-        createdGroupId = doRecieveStr(sockfd);
+        createdGroupId = doRecieveStr(mainSocket);
         printf("Done.\n");
     }
     else
@@ -303,20 +361,20 @@ char* createGroup(struct Group* newGroup) {
 struct UserList* getContacts() {
     printf("Asking for the contacts.\n");
     enum ServerOperations operation = GET_CONTACTS;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
     if (res == -1) {
         perror("send");
         exit(1);
     }
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct UserList* contacts = NULL;
     if (res == -1) {
         perror("recv");
         return contacts;
     }
     if (response == SUCCESS) {
-        contacts = doRecieveUsers(sockfd);
+        contacts = doRecieveUsers(mainSocket);
         printf("Done.\n");
     }
     else
@@ -327,13 +385,13 @@ struct UserList* getContacts() {
 struct Group* getGroupInfo(char* groupId) {
     printf("Fetching group.\n");
     enum ServerOperations operation = GET_GROUP_INFO;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, groupId);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    res = doSendStr(mainSocket, groupId);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct Group* group = NULL;
     if (response == SUCCESS) {
-        group = doRecieveGroup(sockfd);
+        group = doRecieveGroup(mainSocket);
         printf("Done.\n");
     }
     else
@@ -344,13 +402,13 @@ struct Group* getGroupInfo(char* groupId) {
 struct MessageList* getMessages(char* fromId) {
     printf("Fetching messages.\n");
     enum ServerOperations operation = GET_MESSAGES;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, fromId);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    res = doSendStr(mainSocket, fromId);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct MessageList* messages = NULL;
     if (response == SUCCESS) {
-        messages = doRecieveMessages(sockfd);
+        messages = doRecieveMessages(mainSocket);
         printf("Done.\n");
     }
     else
@@ -361,13 +419,13 @@ struct MessageList* getMessages(char* fromId) {
 struct User* getUser(char* userId) {
     printf("Fetching user.\n");
     enum ServerOperations operation = GET_USER;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, userId);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    res = doSendStr(mainSocket, userId);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct User* user = NULL;
     if (response == SUCCESS) {
-        user = doRecieveUser(sockfd);
+        user = doRecieveUser(mainSocket);
         printf("Done.\n");
     }
     else
@@ -378,13 +436,13 @@ struct User* getUser(char* userId) {
 struct GroupList* getUserGroups(char* userId) {
     printf("Asking for a groups.\n");
     enum ServerOperations operation = GET_USER_GROUPS;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, userId);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    res = doSendStr(mainSocket, userId);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct GroupList* groups = NULL;
     if (response == SUCCESS) {
-        groups = doRecieveGroups(sockfd);
+        groups = doRecieveGroups(mainSocket);
         printf("Done.\n");
     }
     else
@@ -395,13 +453,14 @@ struct GroupList* getUserGroups(char* userId) {
 struct User* login(char* userId) {
     printf("Logging in.\n");
     enum ServerOperations operation = LOGIN;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, userId);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    res = doSendStr(mainSocket, userId);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct User* user = NULL;
     if (response == SUCCESS) {
-    user = doRecieveUser(sockfd);
+        setupCallbacks();
+    	user = doRecieveUser(mainSocket);
         printf("Done.\n");
     }
     else
@@ -412,8 +471,8 @@ struct User* login(char* userId) {
 int logout() {
     printf("Logging out.\n");
     enum ServerOperations operation = DISCONNECT;
-    send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    close(sockfd);
+    send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    close(mainSocket);
     printf("Done.\n");
 	return 0;
 }
@@ -421,13 +480,13 @@ int logout() {
 char* registerUser(struct User* user) {
     printf("Asking for the registration of a new user.\n");
     enum ServerOperations operation = REGISTER_USER;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendUser(sockfd, user);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendUser(mainSocket, user);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     char* registeredUserId = NULL;
     if (response == SUCCESS) {
-        registeredUserId = doRecieveStr(sockfd);
+        registeredUserId = doRecieveStr(mainSocket);
         printf("Done.\n");
     }
     else
@@ -438,10 +497,10 @@ char* registerUser(struct User* user) {
 int removeGroup(char* groupId) {
     printf("Asking for the removal of a group.\n");
     enum ServerOperations operation = REMOVE_GROUP;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(sockfd, groupId);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    res = doSendStr(mainSocket, groupId);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -453,10 +512,10 @@ int removeGroup(char* groupId) {
 int removeMessage(struct Message* message) {
     printf("Asking for the removal of a message.\n");
     enum ServerOperations operation = REMOVE_MESSAGE;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendMessage(sockfd, message, 1);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendMessage(mainSocket, message, 1);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -468,9 +527,9 @@ int removeMessage(struct Message* message) {
 int removeUser() {
     printf("Asking for the removal of a user.\n");
     enum ServerOperations operation = REMOVE_USER;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -482,10 +541,10 @@ int removeUser() {
 int resendMessage(struct Message* message) {
     printf("Asking for the resending of a message.\n");
     enum ServerOperations operation = RESEND_MESSAGE;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendMessage(sockfd, message, 1);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendMessage(mainSocket, message, 1);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
         printf("Done.\n");
         return 0;
@@ -497,16 +556,17 @@ int resendMessage(struct Message* message) {
 char* sendMessage(struct Message* newMessage) {
     printf("Asking for the sending of a message.\n");
     enum ServerOperations operation = SEND_MESSAGE;
-    int res = send(sockfd, &operation, sizeof(enum ServerOperations), 0);
-    doSendMessage(sockfd, newMessage, 0);
+    int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
+    doSendMessage(mainSocket, newMessage, 0);
     enum ServerResponses response;
-    res = recv(sockfd, &response, sizeof(enum ServerResponses), 0);
+    res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     if (response == SUCCESS) {
-        char* messageId = doRecieveStr(sockfd);
+        char* messageId = doRecieveStr(mainSocket);
         printf("Done.\n");
         return messageId;
     }
-    printf("Failure.\n");
+	else
+    	printf("Failure.\n");
     return NULL;
 }
 #pragma endregion

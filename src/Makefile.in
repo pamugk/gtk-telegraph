@@ -102,8 +102,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(uidir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_gtk_telegraph_OBJECTS = main.$(OBJEXT) client.$(OBJEXT) \
-	gtk_telegraph.$(OBJEXT)
+am_gtk_telegraph_OBJECTS = gtk_telegraph-main.$(OBJEXT) \
+	gtk_telegraph-client.$(OBJEXT) \
+	gtk_telegraph-gtk_telegraph.$(OBJEXT)
 gtk_telegraph_OBJECTS = $(am_gtk_telegraph_OBJECTS)
 am__DEPENDENCIES_1 =
 gtk_telegraph_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -112,8 +113,8 @@ am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 gtk_telegraph_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(gtk_telegraph_LDFLAGS) $(LDFLAGS) -o $@
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(gtk_telegraph_CFLAGS) \
+	$(CFLAGS) $(gtk_telegraph_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -129,8 +130,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/client.Po \
-	./$(DEPDIR)/gtk_telegraph.Po ./$(DEPDIR)/main.Po
+am__depfiles_remade = ./$(DEPDIR)/gtk_telegraph-client.Po \
+	./$(DEPDIR)/gtk_telegraph-gtk_telegraph.Po \
+	./$(DEPDIR)/gtk_telegraph-main.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -383,6 +385,9 @@ gtk_telegraph_SOURCES = \
 	gtk_telegraph.c \
 	gtk_telegraph.h	
 
+gtk_telegraph_CFLAGS = -lpthread \
+	-lrt 
+
 gtk_telegraph_LDFLAGS = \
 	-Wl,--export-dynamic
 
@@ -481,9 +486,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk_telegraph.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk_telegraph-client.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk_telegraph-gtk_telegraph.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtk_telegraph-main.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -511,6 +516,48 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+gtk_telegraph-main.o: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -MT gtk_telegraph-main.o -MD -MP -MF $(DEPDIR)/gtk_telegraph-main.Tpo -c -o gtk_telegraph-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gtk_telegraph-main.Tpo $(DEPDIR)/gtk_telegraph-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='main.c' object='gtk_telegraph-main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -c -o gtk_telegraph-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+
+gtk_telegraph-main.obj: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -MT gtk_telegraph-main.obj -MD -MP -MF $(DEPDIR)/gtk_telegraph-main.Tpo -c -o gtk_telegraph-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gtk_telegraph-main.Tpo $(DEPDIR)/gtk_telegraph-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='main.c' object='gtk_telegraph-main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -c -o gtk_telegraph-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+gtk_telegraph-client.o: client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -MT gtk_telegraph-client.o -MD -MP -MF $(DEPDIR)/gtk_telegraph-client.Tpo -c -o gtk_telegraph-client.o `test -f 'client.c' || echo '$(srcdir)/'`client.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gtk_telegraph-client.Tpo $(DEPDIR)/gtk_telegraph-client.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='client.c' object='gtk_telegraph-client.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -c -o gtk_telegraph-client.o `test -f 'client.c' || echo '$(srcdir)/'`client.c
+
+gtk_telegraph-client.obj: client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -MT gtk_telegraph-client.obj -MD -MP -MF $(DEPDIR)/gtk_telegraph-client.Tpo -c -o gtk_telegraph-client.obj `if test -f 'client.c'; then $(CYGPATH_W) 'client.c'; else $(CYGPATH_W) '$(srcdir)/client.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gtk_telegraph-client.Tpo $(DEPDIR)/gtk_telegraph-client.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='client.c' object='gtk_telegraph-client.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -c -o gtk_telegraph-client.obj `if test -f 'client.c'; then $(CYGPATH_W) 'client.c'; else $(CYGPATH_W) '$(srcdir)/client.c'; fi`
+
+gtk_telegraph-gtk_telegraph.o: gtk_telegraph.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -MT gtk_telegraph-gtk_telegraph.o -MD -MP -MF $(DEPDIR)/gtk_telegraph-gtk_telegraph.Tpo -c -o gtk_telegraph-gtk_telegraph.o `test -f 'gtk_telegraph.c' || echo '$(srcdir)/'`gtk_telegraph.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gtk_telegraph-gtk_telegraph.Tpo $(DEPDIR)/gtk_telegraph-gtk_telegraph.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gtk_telegraph.c' object='gtk_telegraph-gtk_telegraph.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -c -o gtk_telegraph-gtk_telegraph.o `test -f 'gtk_telegraph.c' || echo '$(srcdir)/'`gtk_telegraph.c
+
+gtk_telegraph-gtk_telegraph.obj: gtk_telegraph.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -MT gtk_telegraph-gtk_telegraph.obj -MD -MP -MF $(DEPDIR)/gtk_telegraph-gtk_telegraph.Tpo -c -o gtk_telegraph-gtk_telegraph.obj `if test -f 'gtk_telegraph.c'; then $(CYGPATH_W) 'gtk_telegraph.c'; else $(CYGPATH_W) '$(srcdir)/gtk_telegraph.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gtk_telegraph-gtk_telegraph.Tpo $(DEPDIR)/gtk_telegraph-gtk_telegraph.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gtk_telegraph.c' object='gtk_telegraph-gtk_telegraph.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gtk_telegraph_CFLAGS) $(CFLAGS) -c -o gtk_telegraph-gtk_telegraph.obj `if test -f 'gtk_telegraph.c'; then $(CYGPATH_W) 'gtk_telegraph.c'; else $(CYGPATH_W) '$(srcdir)/gtk_telegraph.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -666,9 +713,9 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/client.Po
-	-rm -f ./$(DEPDIR)/gtk_telegraph.Po
-	-rm -f ./$(DEPDIR)/main.Po
+		-rm -f ./$(DEPDIR)/gtk_telegraph-client.Po
+	-rm -f ./$(DEPDIR)/gtk_telegraph-gtk_telegraph.Po
+	-rm -f ./$(DEPDIR)/gtk_telegraph-main.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -714,9 +761,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/client.Po
-	-rm -f ./$(DEPDIR)/gtk_telegraph.Po
-	-rm -f ./$(DEPDIR)/main.Po
+		-rm -f ./$(DEPDIR)/gtk_telegraph-client.Po
+	-rm -f ./$(DEPDIR)/gtk_telegraph-gtk_telegraph.Po
+	-rm -f ./$(DEPDIR)/gtk_telegraph-main.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

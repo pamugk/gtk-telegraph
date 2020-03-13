@@ -18,6 +18,14 @@ enum ServerOperations {
     SEND_MESSAGE
 };
 
+enum ServerNotifications {
+    NEW_MESSAGE,
+    REMOVED_GROUP,
+    REMOVED_MESSAGE,
+    REMOVED_USER,
+    SHUTDOWN
+};
+
 enum ServerResponses {
     SUCCESS,
     FAILURE,

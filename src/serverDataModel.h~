@@ -64,6 +64,7 @@ struct User {
     char* username;
     char* name;
     char* surname;
+	char* fullname;
     char* biography;
 };
 

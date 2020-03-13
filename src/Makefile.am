@@ -27,6 +27,9 @@ gtk_telegraph_SOURCES = \
 	gtk_telegraph.c \
 	gtk_telegraph.h	
 
+gtk_telegraph_CFLAGS = -lpthread \
+	-lrt 
+
 
 gtk_telegraph_LDFLAGS = \
 	-Wl,--export-dynamic
