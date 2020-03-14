@@ -185,7 +185,7 @@ block_user_btn_clicked (GtkButton *button, gpointer user_data){
 }
 
 bookmark_btn_clicked (GtkButton *button){
-	gtk_stack_set_visible_child(priv->drawerStack, "chatsDrawer");
+	gtk_stack_set_visible_child_name(priv->drawerStack, "chatsDrawer");
 }
 
 calls_btn_clicked(GtkButton *button){

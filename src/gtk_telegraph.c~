@@ -102,7 +102,7 @@ void acceptNewMessage(struct Message* message){
 
 void onServerShutdown() {
 	printf("Received a message about server shutdown\n");
-	gtk_stack_set_visible_child_name (priv->drawerStack, "disconnectionMessage");
+	gtk_stack_set_visible_child_name (priv->mainStack, "disconnectionMessage");
 }
 
 void showCurrentUserDetails() {
