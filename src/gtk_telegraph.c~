@@ -322,6 +322,7 @@ on_login_btn_clicked(GtkButton *button) {
 	contacts = getContacts (userId);
 	showCurrentUserDetails();
 	showUserContacts();
+	collectAllMessages();
 	gtk_spinner_stop (priv->connectionSpinner);
 }
 
