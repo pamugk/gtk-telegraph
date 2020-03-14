@@ -2,7 +2,7 @@
 /*
  * main.c
  * Copyright (C) 2020 PAM <pamugk@gmail.com>
- *
+ * 
  * gtk-telegraph is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or
@@ -17,30 +17,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-#include <gtk/gtk.h>
 #include "gtk_telegraph.h"
 
-
-#include <glib/gi18n.h>
 int
 main (int argc, char *argv[])
 {
-	Gtktelegraph *app;
-	int status;
-
-
-#ifdef ENABLE_NLS
-	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
-#endif
-
-	
-	app = gtk_telegraph_new ();
-	status = g_application_run (G_APPLICATION (app), argc, argv);
-	g_object_unref (app);
-
-	return status;
+	start_telegraph(argc, argv);
+	return 0;
 }
 

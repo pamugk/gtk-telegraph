@@ -13,18 +13,19 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-extern char userId[74];
+extern char* userId;
 extern struct User* user;
 extern struct UserList* contacts;
 
 void acceptNewMessage(struct Message*);
+void onServerShutdown();
 
 int addContact(char*);
 int addUserToGroup(char*, char*);
 int clearHistory(char*);
 void cleanup();
 char* createGroup(struct Group*);
-void initialize();
+int initialize();
 struct UserList* getContacts();
 struct Group* getGroupInfo(char*);
 struct MessageList* getMessages(char*);

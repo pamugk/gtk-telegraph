@@ -1,7 +1,7 @@
 #include "client.h"
 
 int mainSocket,notifierSocket;
-char userId[74];
+char* userId;
 struct User* user = NULL;
 struct UserList* contacts = NULL;
 
@@ -38,38 +38,28 @@ struct sockaddr_in setupServer() {
     return server;
 }
 
-void readUserDetails(){
-	FILE* details = fopen("details.txt", "r");
-	if (details == NULL){
-		perror("fopen");
-		exit(1);
-	}
-	fscanf(details, "%s", userId);
-	fclose(details);
-}
-
-void initialize() {
+int initialize() {
 	struct sockaddr_in server = setupServer();
     mainSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (mainSocket == -1) {
 		perror("socket error");
-		exit(1);
+		return 1;
 	}
     notifierSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (notifierSocket == -1) {
 		perror("socket error");
-		exit(1);
+		return 1;
 	}
 	if (connect(mainSocket, (struct sockaddr *) &server, sizeof(server)) == -1) {
 		perror("connect error");
-		exit(1);
+		return 1;
 	}
 	if (connect(notifierSocket, (struct sockaddr *) &server, sizeof(server)) == -1) {
 		perror("connect error");
         close(mainSocket);
-		exit(1);
+		return 1;
 	}
-	readUserDetails();
+	return 0;
 }
 
 #pragma region Callbacks
@@ -90,7 +80,6 @@ void* callback(void* params) {
         case NEW_MESSAGE:{
             struct Message* message = doRecieveMessage(notifierSocket, 0);
 			acceptNewMessage(message);
-            messageDestructor(message);
             break;
         }
         case SHUTDOWN:{
@@ -101,12 +90,11 @@ void* callback(void* params) {
     } while (notification != SHUTDOWN);
     close (notifierSocket);
     kill(getppid(), SIGUSR1);
-    pthread_exit(0);
 }
 
 void stopClient(int sig) {
     close(mainSocket);
-    exit(0);
+	onServerShutdown();
 }
 
 void setupCallbacks() {
@@ -450,15 +438,16 @@ struct GroupList* getUserGroups(char* userId) {
     return groups;
 }
 
-struct User* login(char* userId) {
+struct User* login(char* passedUserId) {
     printf("Logging in.\n");
     enum ServerOperations operation = LOGIN;
     int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(mainSocket, userId);
+    res = doSendStr(mainSocket, passedUserId);
     enum ServerResponses response;
     res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct User* user = NULL;
     if (response == SUCCESS) {
+		userId = passedUserId;
         setupCallbacks();
     	user = doRecieveUser(mainSocket);
         printf("Done.\n");

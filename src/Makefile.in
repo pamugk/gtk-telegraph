@@ -381,9 +381,9 @@ gtk_telegraph_SOURCES = \
 	main.c \
 	client.c \
 	client.h \
-	serverDataModel.h \
 	gtk_telegraph.c \
-	gtk_telegraph.h	
+	gtk_telegraph.h \
+	serverDataModel.h
 
 gtk_telegraph_CFLAGS = -lpthread \
 	-lrt 
