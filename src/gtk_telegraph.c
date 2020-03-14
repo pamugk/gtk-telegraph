@@ -121,8 +121,6 @@ gtk_telegraph_new_window (GApplication *app,
 		GTK_BOX (gtk_builder_get_object(builder, "chatsDrawer"));
 	priv->connectionSpinner =
 		GTK_SPINNER (gtk_builder_get_object(builder, "connectionSpinner"));
-	gtk_list_box_set_placeholder (priv->chatsBox, priv->chatsBoxPlaceholder);
-	gtk_widget_set_visible (priv->chatsBoxPlaceholder, TRUE);
 	priv->settingsDrawer =
 		GTK_BOX (gtk_builder_get_object(builder, "settingsDrawer"));
 	priv->curUserCellphone =
@@ -140,6 +138,8 @@ gtk_telegraph_new_window (GApplication *app,
 	priv->chatsBox = GTK_LIST_BOX (gtk_builder_get_object(builder, 
 		"chatsBox"));
 	priv->chatsBoxPlaceholder = GTK_LABEL(gtk_label_new("No contacts found"));
+	gtk_widget_set_visible (priv->chatsBoxPlaceholder, TRUE);
+	gtk_list_box_set_placeholder (priv->chatsBox, priv->chatsBoxPlaceholder);
 	priv->infoboxRevealer =
 		GTK_REVEALER (gtk_builder_get_object(builder, "infoboxRevealer"));
 	priv->contactFullname =
