@@ -84,25 +84,16 @@ void* callback(void* params) {
         }
         case SHUTDOWN:{
 	        printf("Server is down, long live the server.\n");
+			onServerShutdown();
             break;
         }
         }
     } while (notification != SHUTDOWN);
     close (notifierSocket);
-    kill(getppid(), SIGUSR1);
     pthread_exit(0);
 }
 
-void stopClient(int sig) {
-    close(mainSocket);
-	onServerShutdown();
-}
-
 void setupCallbacks() {
-    static struct sigaction act;
-	act.sa_handler = stopClient;
-	sigfillset(&(act.sa_mask));
-	sigaction(SIGUSR1, &act, NULL);
 	pthread_t tid;
 	int res = pthread_create(&tid, NULL, callback, NULL);
 	if (res == -1)

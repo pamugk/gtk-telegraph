@@ -38,18 +38,15 @@ struct _Private
 	GdkScreen* screen;
 	GtkCssProvider* darkProvider;
 	GtkCssProvider* lightProvider;
-
+	
 	GtkStack* mainStack;
 	
 	GtkLabel* loginStatusLbl;
-		
-	GtkBox* mainBox;
+
 	GtkStack* drawerStack;
-	GtkBox* chatsDrawer;
 	GtkSpinner* connectionSpinner;
 	GtkListBox* chatsBox;
 	GtkLabel* chatsBoxPlaceholder;
-	GtkBox* settingsDrawer;
 	GtkLabel* curUserCellphone;
 	GtkLabel* curUserFullname;
 	GtkRevealer* topboxRevealer;
@@ -68,7 +65,6 @@ struct _Private
 	GtkWindow* contactsDialog;
 	GtkWindow* settingsDialog;
 	GtkLabel* curUserFullname1;
-	GtkMessageDialog* serverShutdownDialog;
 	GtkAboutDialog* aboutDialog;
 };
 
@@ -105,7 +101,8 @@ void acceptNewMessage(struct Message* message){
 }
 
 void onServerShutdown() {
-	gtk_widget_show(priv->serverShutdownDialog);
+	printf("Received a message about server shutdown\n");
+	gtk_stack_set_visible_child_name (priv->drawerStack, "disconnectionMessage");
 }
 
 void showCurrentUserDetails() {
@@ -188,7 +185,7 @@ block_user_btn_clicked (GtkButton *button, gpointer user_data){
 }
 
 bookmark_btn_clicked (GtkButton *button){
-	gtk_stack_set_visible_child(priv->drawerStack, priv->chatsDrawer);
+	gtk_stack_set_visible_child(priv->drawerStack, "chatsDrawer");
 }
 
 calls_btn_clicked(GtkButton *button){
@@ -232,7 +229,7 @@ delete_chat_btn_clicked (GtkButton *button, gpointer user_data){
 }
 
 drawer_btn_clicked (GtkButton *button){
-	gtk_stack_set_visible_child(priv->drawerStack, priv->settingsDrawer);
+	gtk_stack_set_visible_child_name(priv->drawerStack, "settingsDrawer");
 }
 
 infopanel_btn_clicked (GtkButton *button){
@@ -255,7 +252,7 @@ login_entry_activate(GtkEntry *messageEntry, gpointer user_data) {
 		gtk_label_set_text (priv->loginStatusLbl, "Login has failed");
 		return;
 	}
-	gtk_stack_set_visible_child(priv->mainStack, priv->mainBox);
+	gtk_stack_set_visible_child_name(priv->mainStack, "mainPage");
 	gtk_spinner_start (priv->connectionSpinner);
 	contacts = getContacts (userId);
 	showCurrentUserDetails();
@@ -265,7 +262,7 @@ login_entry_activate(GtkEntry *messageEntry, gpointer user_data) {
 }
 
 message_entry_activate(GtkEntry *messageEntry, gpointer user_data){
-	const gchar *text = gtk_entry_get_text(messageEntry);
+	gchar *text = gtk_entry_get_text(messageEntry);
 	if (strcmp(text, "") != 0){
 		struct Message* message = 
 			(struct Message*)malloc(sizeof(struct Message));
@@ -303,6 +300,10 @@ nm_switch_activated(GtkSwitch* widget, gboolean state, gpointer user_data){
 	}
 	gtk_switch_set_state (widget, state);
 	return TRUE;
+}
+
+on_message_window_delete(GtkWidget *widget, GdkEvent  *event, gpointer user_data) {
+	gtk_main_quit ();
 }
 
 on_modal_window_delete(GtkWidget *widget, GdkEvent  *event, gpointer user_data){
@@ -370,16 +371,10 @@ create_window (void)
 	priv->loginStatusLbl = 
 		GTK_LABEL (gtk_builder_get_object(builder, "loginStatusLbl"));
 	
-	priv->mainBox =
-		GTK_BOX (gtk_builder_get_object(builder, "mainBox"));
 	priv->drawerStack =
 		GTK_STACK (gtk_builder_get_object(builder, "drawerStack"));
-	priv->chatsDrawer =
-		GTK_BOX (gtk_builder_get_object(builder, "chatsDrawer"));
 	priv->connectionSpinner =
 		GTK_SPINNER (gtk_builder_get_object(builder, "connectionSpinner"));
-	priv->settingsDrawer =
-		GTK_BOX (gtk_builder_get_object(builder, "settingsDrawer"));
 	priv->curUserCellphone =
 		GTK_LABEL (gtk_builder_get_object(builder, "curUserCellphone"));
 	priv->curUserFullname =
@@ -423,12 +418,7 @@ create_window (void)
 		GTK_LABEL (gtk_builder_get_object(builder, "curUserFullname1"));
 	priv->aboutDialog =
 		GTK_ABOUT_DIALOG(gtk_builder_get_object(builder, "aboutDialog"));
-	priv->serverShutdownDialog = 
-		GTK_MESSAGE_DIALOG(gtk_builder_get_object(builder, "serverShutdownDialog"));
-
 	g_object_unref (builder);
-
-	
 	return window;
 }
 
