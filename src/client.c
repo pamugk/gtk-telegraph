@@ -4,6 +4,7 @@ int mainSocket,notifierSocket;
 char* userId;
 struct User* user = NULL;
 struct UserList* contacts = NULL;
+struct GroupList* groups = NULL;
 
 void cleanup() {
 	if (user != NULL) {
@@ -12,6 +13,8 @@ void cleanup() {
 	}
 	if (contacts != NULL)
 		userListDestructor(contacts);
+	if (groups != NULL)
+		groupDestructor (groups);
 }
 
 struct sockaddr_in setupServer() {
@@ -101,6 +104,12 @@ void setupCallbacks() {
 }
 #pragma endregion
 #pragma region Destructors
+void charDestructor(struct CharList* strings) {
+    for (int i = 0; i < strings->count; i += 1)
+        free(strings->list[i]);
+    free(strings->list);
+}
+
 void groupDestructor(struct Group* group) {
     if (group->id != NULL)
         free(group->id);
@@ -161,6 +170,14 @@ char* doRecieveStr(int mainSocket) {
         recv(mainSocket, str, size * sizeof(char), 0);
 	}
     return str;
+}
+
+struct CharList* doRecieveStrs(int nsock) {
+	struct CharList* strings = (struct CharList*)malloc(sizeof(struct CharList));
+	recv(nsock, &(strings->count), sizeof(int), 0);
+	for (int i = 0; i < strings->count; i+= 1)
+		strings->list[i] = doRecieveStr(nsock);
+	return strings;
 }
 
 struct Group* doRecieveGroup(int nsock) {
@@ -308,7 +325,7 @@ int addUserToGroup(char* groupId, char* userId) {
 
 int clearHistory(char* fromId) {
     printf("Clearing history of messages.\n");
-    enum ServerOperations operation = ADD_USER_TO_GROUP;
+    enum ServerOperations operation = CLEAR_HISTORY;
     send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
     doSendStr(mainSocket, fromId);
     enum ServerResponses response;
@@ -413,16 +430,34 @@ struct User* getUser(char* userId) {
     return user;
 }
 
-struct GroupList* getUserGroups(char* userId) {
+struct GroupList* getUserGroups() {
     printf("Asking for a groups.\n");
     enum ServerOperations operation = GET_USER_GROUPS;
     int res = send(mainSocket, &operation, sizeof(enum ServerOperations), 0);
-    res = doSendStr(mainSocket, userId);
     enum ServerResponses response;
     res = recv(mainSocket, &response, sizeof(enum ServerResponses), 0);
     struct GroupList* groups = NULL;
     if (response == SUCCESS) {
-        groups = doRecieveGroups(mainSocket);
+        struct CharList* groupIds = doRecieveStrs(mainSocket);
+		groups = (struct GroupList*)malloc(sizeof(struct GroupList));
+		groups->count = groupIds->count;
+		groups->list = (struct Group**)calloc(groups->count, sizeof(struct Group*));
+		for (int i = 0; i < groups->count; i += 1) {
+			groups->list[i] = getGroupInfo (groupIds->list[i]);
+			if (groups->list[i] != NULL)
+				continue;
+			charDestructor(groupIds);
+			free(groupIds);
+			i -= 1;
+			while (i >= 0) {
+				groupDestructor (groups->list[i]);
+				i -= 1;
+			}
+			free(groups->list);
+			free(groups);
+        	printf("Failure\n");
+			return NULL;
+		}
         printf("Done.\n");
     }
     else

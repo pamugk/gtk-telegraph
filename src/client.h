@@ -16,6 +16,7 @@
 extern char* userId;
 extern struct User* user;
 extern struct UserList* contacts;
+extern struct GroupList* groups;
 
 void acceptNewMessage(struct Message*);
 void onServerShutdown();
@@ -30,7 +31,7 @@ struct UserList* getContacts();
 struct Group* getGroupInfo(char*);
 struct MessageList* getMessages(char*);
 struct User* getUser(char*);
-struct GroupList* getUserGroups(char*);
+struct GroupList* getUserGroups();
 struct User* login(char*);
 int logout();
 char* registerUser(struct User*);

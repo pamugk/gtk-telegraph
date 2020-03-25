@@ -73,13 +73,31 @@ static Private* priv = NULL;
 #pragma region Chat client GUI actions
 void putMessage(const gchar* text, GtkBox* messagesBox, gboolean local) {
 	GtkWidget* messageLabel = gtk_label_new(text);
-	GtkStyleContext* context = 
-		gtk_widget_get_style_context(messageLabel);
+	GtkStyleContext* context = gtk_widget_get_style_context(messageLabel);
 	gtk_style_context_add_class(context, "message");
 	gtk_box_pack_start(messagesBox, messageLabel, FALSE, FALSE, 0);
 	gtk_widget_set_halign(messageLabel, local ? GTK_ALIGN_END : GTK_ALIGN_START);
 	gtk_widget_set_margin_end(messageLabel, 20);
 	gtk_widget_set_visible (messageLabel, TRUE);
+}
+
+void setLastMessageToContactView(GtkGrid* contactView, struct Message* message) {
+	GtkLabel* lastMessageLabel = GTK_LABEL(gtk_grid_get_child_at(contactView, 1, 1));
+	gtk_label_set_text (lastMessageLabel, message->text);
+}
+
+void acceptNewMessage(struct Message* message){
+	for (int i = 0; i < contacts->count; i += 1) {
+		if (strcmp(contacts->list[i]->id, message->fromId) == 0) {
+			setLastMessageToContactView(GTK_GRID(gtk_bin_get_child(
+				           gtk_list_box_get_row_at_index (priv->chatsBox, i))),
+			                            message);
+			break;
+		}
+	}
+	putMessage (message->text, 
+		GTK_BOX(gtk_stack_get_child_by_name (priv->messagesStack, message->fromId)),
+	    FALSE);
 }
 
 void collectAllMessages() {
@@ -91,13 +109,11 @@ void collectAllMessages() {
 		for (int i = 0; i < messages->count; i += 1)
 			putMessage(messages->list[i]->text, 
 				messageBox, strcmp(userId, messages->list[i]->fromId) == 0);
+		if (messages->count > 0)
+			setLastMessageToContactView(GTK_GRID(gtk_bin_get_child(
+				           gtk_list_box_get_row_at_index (priv->chatsBox, i))),
+			                            messages->list[messages->count - 1]);
 	}
-}
-
-void acceptNewMessage(struct Message* message){
-	putMessage (message->text, 
-		GTK_BOX(gtk_stack_get_child_by_name (priv->messagesStack, message->fromId)),
-	    FALSE);
 }
 
 void onServerShutdown() {
@@ -212,8 +228,21 @@ chatRowSelected(GtkListBox* box, GtkListBoxRow *row, gpointer user_data) {
 	}
 }
 
+void removeChild(GtkWidget* widget, gpointer container) {
+	gtk_container_remove (GTK_CONTAINER(container), widget);
+}
+
 clear_history_btn_clicked (GtkButton *button, gpointer user_data){
-	printf("History cleared\n");
+	GtkListBoxRow* selectedChat = gtk_list_box_get_selected_row (priv->chatsBox);
+	char* userId = contacts->list[gtk_list_box_row_get_index(selectedChat)]->id;
+	if (selectedChat != NULL) {
+		int outcome = clearHistory (userId);
+		if (outcome == 0) {
+			GtkBox* messages = GTK_BOX(gtk_stack_get_child_by_name (
+			                                   priv->messagesStack, userId));
+			gtk_container_foreach (messages, removeChild, messages);
+		}
+	}
 }
 
 contacts_btn_clicked(GtkButton *button){
@@ -241,20 +270,20 @@ login_entry_activate(GtkEntry *messageEntry, gpointer user_data) {
 	const gchar *details = gtk_entry_get_text(messageEntry);
 	if (details == NULL || strcmp("", details) == 0) {
 		gtk_label_set_text (priv->loginStatusLbl, "Details can not be empty");
-		return;
+		return 0;
 	}
 	if (initialize() != 0) {
 		gtk_label_set_text (priv->loginStatusLbl, "Server does not respond");
-		return;
+		return 0;
 	}
 	user = login(details);
 	if (user == NULL) {
 		gtk_label_set_text (priv->loginStatusLbl, "Login has failed");
-		return;
+		return 0;
 	}
 	gtk_stack_set_visible_child_name(priv->mainStack, "mainPage");
 	gtk_spinner_start (priv->connectionSpinner);
-	contacts = getContacts (userId);
+	contacts = getContacts ();
 	showCurrentUserDetails();
 	showUserContacts();
 	collectAllMessages();
@@ -263,24 +292,28 @@ login_entry_activate(GtkEntry *messageEntry, gpointer user_data) {
 
 message_entry_activate(GtkEntry *messageEntry, gpointer user_data){
 	gchar *text = gtk_entry_get_text(messageEntry);
-	if (strcmp(text, "") != 0){
-		struct Message* message = 
+	if (text == NULL || strcmp(text, "") == 0)
+		return TRUE;
+	struct Message* message = 
 			(struct Message*)malloc(sizeof(struct Message));
-		char* curUserId = (char*)calloc(strlen(userId), sizeof(char));
-		strcpy(curUserId, userId);
-		message->fromId = curUserId;
-		message->toId = contacts->list[gtk_list_box_row_get_index(
-			gtk_list_box_get_selected_row (priv->chatsBox))]->id;
-		message->text = text;
-		message->id = sendMessage (message);
-		if (message -> id == NULL)
-			messageDestructor (message);
-		else
+	char* curUserId = (char*)calloc(strlen(userId), sizeof(char));
+	strcpy(curUserId, userId);
+	message->fromId = curUserId;
+	GtkBin* contactRow = gtk_list_box_get_selected_row (priv->chatsBox);
+	message->toId = contacts->list[gtk_list_box_row_get_index(contactRow)]->id;
+	message->text = text;
+	message->id = sendMessage (message);
+	if (message -> id == NULL)
+		messageDestructor (message);
+	else {
+			GtkGrid* grid = GTK_GRID(gtk_bin_get_child(contactRow));
+			printf("%s\n", message->text);
+			setLastMessageToContactView(grid, message);
 			putMessage(text, GTK_BOX(
 				gtk_stack_get_child_by_name(priv->messagesStack, 
-				                            message->toId)), TRUE);
-		gtk_entry_set_text (messageEntry, "");
-	}
+						                       message->toId)), TRUE);
+			gtk_entry_set_text (messageEntry, "");
+	}	
 	return TRUE;
 }
 

@@ -33,13 +33,6 @@ enum ServerResponses {
 };
 
 #pragma region Data model
-struct CharList {
-    int count;
-    char** list;
-};
-
-void charDestructor(struct CharList*);
-
 struct Group {
     char* id;
     char* creatorId;
